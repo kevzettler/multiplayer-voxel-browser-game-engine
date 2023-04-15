@@ -1,0 +1,5 @@
+node_modules/
+/dist/0.bundle.worker.js
+/build/*
+/.DS_Store
+*.DS_STORE

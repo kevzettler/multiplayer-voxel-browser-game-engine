@@ -1,0 +1,134 @@
+struct Inventory{
+  string head;
+  string core;
+  string arms;
+  string legs;
+  string booster;
+  string weapon;
+}
+
+// Kiwi dosen't have support for nested arrays
+// https://github.com/evanw/kiwi/issues/10
+struct Color {
+  float r;
+  float g;
+  float b;
+  float a;
+}
+
+struct Animation {
+  string name;
+  bool noLoop;
+  float startTime;
+}
+
+message AnimationQueue{
+  Animation[] active = 1;
+  Animation[] passive = 2;
+}
+
+message Entity{
+  string id = 1;
+  string type = 2;
+  float[] position = 3;
+  float[] rotation = 4;
+  float[] eGeoRadius = 5;
+  int lookSpeed = 6;
+
+  int jumpStrength = 7;
+  int jumpVelocity = 8;
+  int jumpAcceleration = 9;
+
+  int[] moveAxisDirection = 10;
+  int[] lookAxisDirection = 11;
+
+
+  string userName = 12;
+  string skeleton = 13;
+  AnimationQueue[] animations = 14;
+  Color[] palette = 15;
+  Inventory items = 16;
+
+
+  float[] viewVertRotation = 17;
+  int[] hitpoints = 18;
+
+  //projectile specific data
+  float[] direction = 19;
+
+  // lastInput
+  int lastInputAck = 20;
+
+  Loop loop = 21;
+
+  bool dashing = 22;
+
+  int[] engine = 23;
+  int[] special = 24;
+
+  bool jetpackin = 25;
+  string[] killList = 26;
+  string assetId = 27;
+
+  // New ECS props
+  string[] behaviors = 28;
+  int[] geometryOffset = 29;
+  bool collider = 30;
+  int[] broadPhaseBoxPadding = 31;
+  string[] assetFiles = 32;
+  int[] color = 33;
+  int[] cubeDimensions = 34;
+  string[] broadPhaseIgnoreIDs = 35;
+}
+
+struct Loop {
+  float dt;
+  float elapsed;
+  int tickCount;
+  float curTime;
+}
+
+message Scene{
+  Loop time = 1;
+  string[] assetIds = 2;
+  map<string, Entity> entities = 3;
+}
+
+struct Player{
+  string userName;
+  Color[] palette;
+  Inventory items;
+}
+
+message Payload{
+  map<string, Entity> entities = 1;
+  int[] inputMove = 2;
+  int movementX = 3;
+  int movementY = 4;
+  Scene scene = 5;
+
+  //Chat payloads
+  string userName = 6;
+  string message = 7;
+
+  //input payload
+  int jumpBool = 8;
+
+  // Asset welcome package
+  string[] assetIds = 9;
+
+  Player player = 10;
+  Loop time = 11;
+}
+
+message Meta{
+  int inputId = 1;
+}
+
+message Action{
+  string type = 1;
+  string systemId = 2;
+  Payload payload = 3;
+  Meta meta = 4;
+  Loop loop = 5;
+}

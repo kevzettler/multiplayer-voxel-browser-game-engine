@@ -1,0 +1,63 @@
+.siteHeader{
+  width: 100%;
+  display: block;
+  border-bottom: 1px solid grey;
+  background-color: #CCC;
+  height: 20px;
+  padding-left: 15px;
+}
+
+.siteHeader *{
+  float: left;
+}
+
+.headerMenu {
+  padding: 0;
+  margin: 0;
+  float: left;
+  list-style-type: none;
+  margin-right: 15px;
+  border-left: 1px solid;
+}
+
+.headerMenu li{
+  float: left;
+}
+
+.navLink{
+  display: block;
+  border-right: 1px solid;
+  padding: 0 10px 0 10px;
+  height: 100%;
+}
+
+.navLink:hover{
+  background-color: grey;
+  color: white;
+}
+
+.active{
+  background-color: white;
+}
+
+
+.headerLogoLink{
+  display: block;
+  height: 100%;
+  width: 128px;
+}
+
+.headerLogoImage{
+  position: absolute;
+  height: 30px;
+  width: 128px;
+}
+
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  /* Styles */
+  .socialMediaList{
+    display:none;
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "./node_modules",
+    "./src/browser.worker.ts",
+    "./src/index.ts",
+    "./src/network/ClientNetwork.ts",
+    "./src/RenderStore.ts",
+  ],
+}
