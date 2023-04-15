@@ -11,7 +11,11 @@
     "dev-server": "npx webpack --progress --config ./webpack/server.dev.js",
     "build-server": "npx webpack --progress --config ./webpack/server.prod.js",
     "local-prod-client": "NODE_ENV=production ASSET_HOST=localhost ASSET_PORT=5000 SIGNALHUB_HOST=0.0.0.0 SOCKETIO_HOST=0.0.0.0 TURNSERVER_HOST=0.0.0.0 npm run build-client && cp -R ./public/assets ./build && npx serve ./build",
-    "local-prod-server": "NODE_ENV=production ASSET_HOST=localhost ASSET_PORT=5000 SIGNALHUB_HOST=0.0.0.0 SOCKETIO_HOST=0.0.0.0 TURNSERVER_HOST=0.0.0.0 npm run build-server && node build/server.js"
+    "local-prod-server": "NODE_ENV=production ASSET_HOST=localhost ASSET_PORT=5000 SIGNALHUB_HOST=0.0.0.0 SOCKETIO_HOST=0.0.0.0 TURNSERVER_HOST=0.0.0.0 npm run build-server && node build/server.js",
+    "build-qb-meshes": "find ./assets -name \"*.qb\" | while IFS= read -r file_path; do node ./scripts/QBToAOVerts.js \"$file_path\"; done",
+    "build-vox-meshes": "find ./assets -name \"*.qb\" | while IFS= read -r file_path; do node ./scripts/QBToAOVerts.js \"$file_path\"; done",
+    "clean-meshes": "git clean -f -e '!*.aoverts'",
+    "build-meshes": "npm run build-qb-meshes && npm run build-vox-meshes"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +46,7 @@
     "@types/react-table": "^7.0.28",
     "@types/react-tabs": "^2.3.2",
     "@types/socket.io": "^2.1.11",
+    "ao-mesher": "^0.2.10",
     "arraybuffer-loader": "^1.0.8",
     "autoprefixer": "^10.0.1",
     "clean-webpack-plugin": "^3.0.0",
@@ -52,6 +57,8 @@
     "html-webpack-plugin": "^5.1.0",
     "json-loader": "^0.5.7",
     "ndarray": "^1.0.19",
+    "parse-magica-voxel": "^2.1.2",
+    "parse-qubicle": "^1.0.1",
     "postcss-flexbugs-fixes": "^5.0.0",
     "postcss-loader": "^4.1.0",
     "raw-loader": "^4.0.2",
@@ -63,7 +70,8 @@
     "webpack": "^5.22.0",
     "webpack-cli": "^4.5.0",
     "webpack-dev-server": "^4.0.0-beta.0",
-    "webpack-merge": "^5.7.3"
+    "webpack-merge": "^5.7.3",
+    "zeros": "^1.0.0"
   },
   "dependencies": {
     "@babel/types": "^7.11.5",

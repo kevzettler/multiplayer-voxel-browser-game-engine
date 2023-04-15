@@ -7,11 +7,11 @@ var argv = require('minimist')(process.argv.slice(2));
 var mechSniperActions = require('../src/assets/mechsniper-actions.json');
 
 //Convert Blender JointNames to match Qubicle Chunk names Foot.R -> FootR
-Object.keys(mechSniperActions.jointNameIndices).forEach((jointName) => {
+Object.keys(mechSniperActions.joint_index).forEach((jointName) => {
   if (jointName.match(/\./)) {
     var newName = jointName.replace('.', '');
-    mechSniperActions.jointNameIndices[newName] = mechSniperActions.jointNameIndices[jointName];
-    delete mechSniperActions.jointNameIndices[jointName]
+    mechSniperActions.joint_index[newName] = mechSniperActions.joint_index[jointName];
+    delete mechSniperActions.joint_index[jointName]
   }
 });
 
@@ -35,15 +35,15 @@ function qbToNDArray(qbMatrix) {
   );
 
 
-  var jointId = mechSniperActions.jointNameIndices[qbMatrix.name];
+  var jointId = mechSniperActions.joint_index[qbMatrix.name];
   const weaponRegEx = /(Gun|Sword)(L|R)/g;
 
   if (!jointId) {
     const capture = weaponRegEx.exec(qbMatrix.name)
     if (capture) {
-      jointId = mechSniperActions.jointNameIndices[`Hand${capture[2]}`];
+      jointId = mechSniperActions.joint_index[`Hand${capture[2]}`];
     } else {
-      jointId = mechSniperActions.jointNameIndices['Chest'];
+      jointId = mechSniperActions.joint_index['Chest'];
     }
   }
 
