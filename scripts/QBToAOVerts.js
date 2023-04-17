@@ -59,7 +59,7 @@ function qbToNDArray(qbMatrix) {
 
     //This is a hack
     //The joint and palette indexs are packed in to a byte 255 max
-    //because joint can be > 15 we can't use 2, 4bit numbers
+    //because joint can be > 15 we can't use two, 4bit numbers
     // joint=25 + palette=5 = combo=255
     // they are seperated by decimal digits
     const jointAndPaletteDecmialCombo = Number(String(jointId) + String(paletteMap[colorKey]));

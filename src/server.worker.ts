@@ -23,18 +23,20 @@ glMatrix.setMatrixArrayType(Array);
 const ASSET_HOST = process.env.ASSET_HOST;
 const ASSET_PORT = process.env.ASSET_PORT;
 
+const HOST_ROOT = `http://${ASSET_HOST}:${ASSET_PORT}`
+
 class ServerStore extends RootStore {
   uuid = 'game-server'
   role = 'server'
-  assetPath = `http://${ASSET_HOST}:${ASSET_PORT}/assets`
+  assetPath = `${HOST_ROOT}/assets`
 
-  worldUP = [0,1,0]
-  worldDown = [0,-1,0]
+  worldUP = [0, 1, 0]
+  worldDown = [0, -1, 0]
 
   assetStore: AssetStore = null
   entityStore: EntityStore = null
 
-  constructor(props?: IStoreProps){
+  constructor(props?: IStoreProps) {
     super(props);
     this.assetStore = new AssetStore(this);
     this.entityStore = new EntityStore(this);
@@ -44,22 +46,22 @@ class ServerStore extends RootStore {
     const clientBroadCastRate = (60 * 1) / 10; //60fps=1sec * 5
     let clientBroadcastTimer = 0;
     this.loop = new Loop({
-      update: (dt: number, elapsed:number, tickCount:number) => {
-        this.entityStore.updateEntities(dt,elapsed, tickCount);
-        this.time = {dt, elapsed, tickCount, curTime: this.loop._curTime};
-//        console.log(tickCount, this.loop._curTime);
+      update: (dt: number, elapsed: number, tickCount: number) => {
+        this.entityStore.updateEntities(dt, elapsed, tickCount);
+        this.time = { dt, elapsed, tickCount, curTime: this.loop._curTime };
+        //        console.log(tickCount, this.loop._curTime);
       },
 
       //Server dosen't actually render it broadcasts to clients
       render: () => {
-        if(!this.time) return;
+        if (!this.time) return;
         clientBroadcastTimer++;
-        if(clientBroadcastTimer >= clientBroadCastRate){
+        if (clientBroadcastTimer >= clientBroadCastRate) {
           parentPort.postMessage(actionSchema.encodeAction({
             type: "@NETWORK/server/tick",
             // TODO KZ worker_threads needs simple objects and cant take MOBX objects
             // needs to be strringified or serialized before sending
-            payload:{
+            payload: {
               time: this.time,
               entities: this.entityStore.networkReplicatedEntities,
             }
@@ -77,18 +79,18 @@ class ServerStore extends RootStore {
 
 declare global {
   namespace NodeJS {
-    interface Global{
+    interface Global {
       rootState: RootStore
     }
   }
 }
 
-async function main(){
+async function main() {
   const rootState = new ServerStore({
     debug: {
-      dispatchLog: (actionType: string) =>{
-        if(actionType.match(/tick/)) return false;
-        if(actionType.match(/LOOK/)) return false;
+      dispatchLog: (actionType: string) => {
+        if (actionType.match(/tick/)) return false;
+        if (actionType.match(/LOOK/)) return false;
         return true;
       }
     },
@@ -98,11 +100,12 @@ async function main(){
   await Scene(rootState);
   rootState.startLoop();
   console.log("Server Simulation Started...");
+  console.log(`access at ${HOST_ROOT}`);
 
   parentPort.addEventListener((event: any) => {
-    if(event && event.type){
+    if (event && event.type) {
       rootState.dispatch(event);
-    }else{
+    } else {
       console.warn('unsure what to do with message passed to worker...', event);
     }
   });

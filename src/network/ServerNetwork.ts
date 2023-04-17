@@ -10,7 +10,7 @@ export default class ServerNetwork extends NetworkBase {
   networkPeerSendWelcome({ id }: { id: string }) {
     //Tell the worker a new peer has joined to
     // initiate the welcome package
-    console.log('sending welcom peer to worker...');
+    console.log('sending welcome peer to worker...');
     this.dispatchProxy({
       type: "@SERVER/WELCOME/PEER",
       payload: {

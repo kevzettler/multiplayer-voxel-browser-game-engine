@@ -46,7 +46,7 @@ void main() {
   // Blender space is centered around the Z origin
   // Quibicle space is offset by whatever the fuck is going on in quibicle usually edge aligned
   // model == world space == the combined transform hiearchy.
-  // I belive what needs to happen here is that the blender space off set needs match the world position of the verts
+  // I belive what needs to happen here is that the blender space offset needs match the world position of the verts
   vec4 worldSpacePosition =
     model * //World space
     joints[jointId] * //Blender space
