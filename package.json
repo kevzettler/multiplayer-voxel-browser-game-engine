@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "dev": "npm-run-all -l -p client:dev server:dev server:signalhub",
+    "dev": "npm-run-all -l -p client:dev server:dev server:signal",
     "client:dev": "npx webpack-dev-server --mode development --config ./webpack/web.dev.js",
     "client:build": "npx webpack --progress --config ./webpack/web.prod.js",
     "server:dev": "sleep 5 && npm-run-all -l -p server:watch server:start",
@@ -17,7 +17,8 @@
     "meshes:qb": "find ./assets -name \"*.qb\" | while IFS= read -r file_path; do node ./scripts/QBToAOVerts.js \"$file_path\"; done",
     "meshes:vox": "find ./assets -name \"*.qb\" | while IFS= read -r file_path; do node ./scripts/QBToAOVerts.js \"$file_path\"; done",
     "meshes:clean": "git clean -f -e '!*.aoverts'",
-    "meshes:build": "npm run meshes:qb && npm run meshes:vox"
+    "meshes:build": "npm run meshes:qb && npm run meshes:vox",
+    "animations:build": "./scripts/landon_export_actions.sh | jq > ./src/assets/mechsniper-actions.json"
   },
   "keywords": [],
   "author": "",
