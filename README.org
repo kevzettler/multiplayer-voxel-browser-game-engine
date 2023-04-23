@@ -31,7 +31,7 @@ The ECS is not a pure ECS with strict flat buffer memory arrangement. The engine
 
 ** Physics and Collision
 
-[[./images/physics.mp4]]
+[[./images/physics.gif]]
 
 + Broad phase
 Broad phase collision uses AABB to AABB. Each frame checks all entities for AABB collisions. This could be improved with some spatial partitioning quad tree system or something.
