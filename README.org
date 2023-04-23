@@ -30,6 +30,9 @@ The engine has a stateless rendering function influenced by react. An offscreen 
 The ECS is not a pure ECS with strict flat buffer memory arrangement. The engine uses a custom entity component system powered by [[https://mobx.js.org/README.html][mobx]]. It's more of a mixin system. Entities are classes composed of mixins. Each mixin is a class that has its own related state. Mixins then use mobx's ~computed~ and and ~observable~ helpers to dynamically derive entity state.
 
 ** Physics and Collision
+
+[[./images/physics.mp4]]
+
 + Broad phase
 Broad phase collision uses AABB to AABB. Each frame checks all entities for AABB collisions. This could be improved with some spatial partitioning quad tree system or something.
 
