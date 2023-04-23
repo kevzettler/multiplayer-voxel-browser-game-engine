@@ -5,7 +5,6 @@ import RootStore from './RootStore';
 import LocalPlayer from './LocalPlayer';
 import RemotePlayer from './RemotePlayer';
 import { getAssetListFromItems } from './AssetDependency';
-import Scene from './scene';
 import actionsKiwi from './network/action.kiwi';
 import parentPort from './Worker'
 
@@ -16,7 +15,7 @@ type Store = ClientStore | RootStore;
 const actionMap = {
   '@RENDER/RESIZE': (
     rootStore: Store,
-    action: {payload: {height: number, width: number}}
+    action: { payload: { height: number, width: number } }
   ) => {
     const { width, height } = action.payload;
     rootStore.renderStore.resize(width, height);
@@ -24,113 +23,113 @@ const actionMap = {
 
   '@RENDER/INIT': async (
     rootStore: Store,
-    action: {payload: {
-      clientId: string
-      canvas: HTMLCanvasElement
-      width: number
-      height: number
-      player: any
-    }}) => {
-      rootStore.uuid = action.payload.clientId;
-      rootStore.renderStore.init(
-        action.payload.canvas,
-        action.payload.width,
-        action.payload.height
-      );
-
-      const playerPayload = {
-        ...action.payload.player,
-        id: rootStore.uuid,
+    action: {
+      payload: {
+        clientId: string
+        canvas: HTMLCanvasElement
+        width: number
+        height: number
+        player: any
       }
+    }) => {
+    rootStore.uuid = action.payload.clientId;
+    rootStore.renderStore.init(
+      action.payload.canvas,
+      action.payload.width,
+      action.payload.height
+    );
 
-      const playerId = playerPayload.id ? playerPayload.id : `${rootStore.uuid}`;
-      const userName = playerPayload.userName ? playerPayload.userName : `${rootStore.uuid}`
-      const playerAssets = getAssetListFromItems(playerPayload.items);
-      await rootStore.assetStore.fetchList(playerAssets);
+    const playerPayload = {
+      ...action.payload.player,
+      id: rootStore.uuid,
+    }
 
-      new LocalPlayer({
-        rootStore,
-        id: playerId,
-        userName,
-        position: [0, 0, -100],
-        rotation: [0,0,0,1],
-        collider: true,
-        gunRate: [0, 30],
-        broadPhaseBoxPadding: [15, 9, 15],
-        color: [0,1,1,0.8],
-        assetFiles: playerAssets,
-        palette: playerPayload.palette,
-        items: playerPayload.items
-      });
+    const playerId = playerPayload.id ? playerPayload.id : `${rootStore.uuid}`;
+    const userName = playerPayload.userName ? playerPayload.userName : `${rootStore.uuid}`
+    const playerAssets = getAssetListFromItems(playerPayload.items);
+    await rootStore.assetStore.fetchList(playerAssets);
 
-      //await Scene(rootStore);
-      //rootStore.debug = {collisions: true};
-      rootStore.startLoop();
+    new LocalPlayer({
+      rootStore,
+      id: playerId,
+      userName,
+      position: [0, 0, -100],
+      rotation: [0, 0, 0, 1],
+      collider: true,
+      gunRate: [0, 30],
+      broadPhaseBoxPadding: [15, 9, 15],
+      color: [0, 1, 1, 0.8],
+      assetFiles: playerAssets,
+      palette: playerPayload.palette,
+      items: playerPayload.items
+    });
 
-      parentPort.postMessage({
-        type: "@NETWORK/INIT"
-      }, null)
-    },
+    rootStore.startLoop();
 
-  "@SERVER/PEER/DISCONNECT": (rootStore: Store, action:any) => {
-    if(action.entityId === rootStore.uuid){
+    parentPort.postMessage({
+      type: "@NETWORK/INIT"
+    }, null)
+  },
+
+  "@SERVER/PEER/DISCONNECT": (rootStore: Store, action: any) => {
+    if (action.entityId === rootStore.uuid) {
       console.error('SERVER/PEER/DISCONNECT disconnect event for self???')
     }
     rootStore.entityStore.removeEntity(action.entityId);
   },
 
-  "@INPUT/MOVE-FORWARD/PRESS": (rootStore:Store, action:any) => {
-    rootStore.entityStore.entityIndex[action.systemId].emit('movePress', 0,1);
+  "@INPUT/MOVE-FORWARD/PRESS": (rootStore: Store, action: any) => {
+    rootStore.entityStore.entityIndex[action.systemId].emit('movePress', 0, 1);
   },
 
-  "@INPUT/MOVE-FORWARD/UP": (rootStore:Store, action:any) => {
-    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 0,0)
+  "@INPUT/MOVE-FORWARD/UP": (rootStore: Store, action: any) => {
+    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 0, 0)
   },
-  "@INPUT/MOVE-BACK/PRESS": (rootStore:Store, action:any) => {
+  "@INPUT/MOVE-BACK/PRESS": (rootStore: Store, action: any) => {
     rootStore.entityStore.entityIndex[action.systemId].emit("movePress", 0, -1)
   },
-  "@INPUT/MOVE-BACK/UP": (rootStore:Store, action:any) => {
-    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 0,0)
+  "@INPUT/MOVE-BACK/UP": (rootStore: Store, action: any) => {
+    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 0, 0)
   },
 
-  "@INPUT/MOVE-LEFT/PRESS": (rootStore:Store, action:any) => {
-    rootStore.entityStore.entityIndex[action.systemId].emit("movePress", 1,-1)
+  "@INPUT/MOVE-LEFT/PRESS": (rootStore: Store, action: any) => {
+    rootStore.entityStore.entityIndex[action.systemId].emit("movePress", 1, -1)
   },
-  "@INPUT/MOVE-LEFT/UP": (rootStore:Store, action:any) => {
-    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 1,0)
+  "@INPUT/MOVE-LEFT/UP": (rootStore: Store, action: any) => {
+    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 1, 0)
   },
 
-  "@INPUT/MOVE-RIGHT/PRESS": (rootStore:Store, action:any) => {
-    rootStore.entityStore.entityIndex[action.systemId].emit("movePress", 1,1)
+  "@INPUT/MOVE-RIGHT/PRESS": (rootStore: Store, action: any) => {
+    rootStore.entityStore.entityIndex[action.systemId].emit("movePress", 1, 1)
   },
-  "@INPUT/MOVE-RIGHT/UP": (rootStore:Store, action:any) => {
-    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 1,0)
+  "@INPUT/MOVE-RIGHT/UP": (rootStore: Store, action: any) => {
+    rootStore.entityStore.entityIndex[action.systemId].emit("moveRelease", 1, 0)
   },
-  "@INPUT/JUMP/PRESS": (rootStore:Store, action:any) => {
+  "@INPUT/JUMP/PRESS": (rootStore: Store, action: any) => {
     rootStore.entityStore.entityIndex[action.systemId].emit("jump", 1);
   },
 
-  "@INPUT/JUMP/UP": (rootStore:Store, action:any) => {
+  "@INPUT/JUMP/UP": (rootStore: Store, action: any) => {
     rootStore.entityStore.entityIndex[action.systemId].emit("releaseJump", 1);
   },
 
-  "@INPUT/LOOK": (rootStore:Store, action:any) => {
-    if(rootStore.entityStore.entityIndex[action.systemId]){
+  "@INPUT/LOOK": (rootStore: Store, action: any) => {
+    if (rootStore.entityStore.entityIndex[action.systemId]) {
       rootStore.entityStore.entityIndex[action.systemId].setLookAxisDirection(action.payload);
-    }else{
+    } else {
       console.warn("@INPUT/LOOKf local player not ready for input");
     }
   },
 
-  '@INPUT/PRIMARY_TRIGGER': (rootStore:Store, action:any) => {
+  '@INPUT/PRIMARY_TRIGGER': (rootStore: Store, action: any) => {
     rootStore.entityStore.entityIndex[action.systemId].emit('primaryTrigger');
   },
 
-  '@INPUT/PRIMARY_RELEASE': (rootStore:Store, action:any) => {
+  '@INPUT/PRIMARY_RELEASE': (rootStore: Store, action: any) => {
     rootStore.entityStore.entityIndex[action.systemId].emit('primaryRelease');
   },
 
-  "@SERVER/PLAYER/JOIN": async (rootStore:Store, action:any) => {
+  "@SERVER/PLAYER/JOIN": async (rootStore: Store, action: any) => {
     console.log("network/player/join");
     const playerPayload = {
       ...action.payload.player,
@@ -144,13 +143,13 @@ const actionMap = {
       rootStore,
       ...playerPayload,
       position: [0, 0, -100],
-      rotation: [0,0,0,1],
+      rotation: [0, 0, 0, 1],
       assetFiles: playerAssets,
     });
 
     // Ensure player dosen't overlap with some other entity
-    if(newPlayer.broadPhaseCollisions && newPlayer.broadPhaseCollisions.length){
-      while(newPlayer.broadPhaseCollisions.length){
+    if (newPlayer.broadPhaseCollisions && newPlayer.broadPhaseCollisions.length) {
+      while (newPlayer.broadPhaseCollisions.length) {
         vec3.add(newPlayer.position, newPlayer.position, [10, 0, -10])
       }
     }
@@ -165,34 +164,34 @@ const actionMap = {
 
   "@SERVER/WELCOME/PEER": (
     rootStore: Store,
-    action:{
-      type: string, payload:{peerId: string}
+    action: {
+      type: string, payload: { peerId: string }
     }) => {
 
-      const welcomePackage = Object.keys(
-        rootStore.assetStore.loadedAssets
-      );
+    const welcomePackage = Object.keys(
+      rootStore.assetStore.loadedAssets
+    );
 
-      // Send a compressed message back to the peer
-      console.log('send welcome package to peer');
-      parentPort.postMessage({
-        peerTarget: action.payload.peerId,
-        peerStatus: 'sync',
-        action: actionSchema.encodeAction({
-          type: "@CLIENT/WELCOME/SYNC",
-          systemId: rootStore.uuid,
-          payload: {
-            time: rootStore.time,
-            assetIds: welcomePackage,
-            entities: rootStore.entityStore.rootEntities,
-          },
-        })
-      }, null);
-    },
+    // Send a compressed message back to the peer
+    console.log('send welcome package to peer');
+    parentPort.postMessage({
+      peerTarget: action.payload.peerId,
+      peerStatus: 'sync',
+      action: actionSchema.encodeAction({
+        type: "@CLIENT/WELCOME/SYNC",
+        systemId: rootStore.uuid,
+        payload: {
+          time: rootStore.time,
+          assetIds: welcomePackage,
+          entities: rootStore.entityStore.rootEntities,
+        },
+      })
+    }, null);
+  },
 
   '@CLIENT/WELCOME/SYNC': async (
     rootStore: ClientStore,
-    action: {type: string, payload: any}
+    action: { type: string, payload: any }
   ) => {
     await rootStore.assetStore.fetchList(action.payload.assetIds);
 
@@ -221,11 +220,11 @@ const actionMap = {
     rootStore.loop.resume();
   },
 
-  '@NETWORK/server/tick': async(
+  '@NETWORK/server/tick': async (
     rootStore: Store,
     action: any
   ) => {
-    if(rootStore.loop._tickCount >= action.payload.time.tickCount + 10){
+    if (rootStore.loop._tickCount >= action.payload.time.tickCount + 10) {
       console.error(
         'Client Tick has out paced server tick???',
         rootStore.loop._tickCount,

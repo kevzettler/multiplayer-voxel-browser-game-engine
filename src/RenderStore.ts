@@ -14,7 +14,7 @@ import ClientStore from './ClientStore';
 import PlayerName from './PlayerName';
 
 import DrawActors from './DrawActors';
-import DrawFlat, {ShadowFlat, ShadedFlat} from './DrawFlat';
+import DrawFlat, { ShadowFlat, ShadedFlat } from './DrawFlat';
 import DrawCamera from './DrawCamera';
 import AxisHelper from './AxisHelper';
 import TexQuad from './TexQuad';
@@ -39,19 +39,19 @@ const skyClear = {
   depth: 1
 };
 
-function makeTextCanvas(text:string, width:number, height:number) {
+function makeTextCanvas(text: string, width: number, height: number) {
   var canvas = new OffscreenCanvas(width, height);
   var textCtx = canvas.getContext("2d");
   textCtx.clearRect(0, 0, textCtx.canvas.width, textCtx.canvas.height);
-  textCtx.canvas.width  = width;
+  textCtx.canvas.width = width;
   textCtx.canvas.height = height;
   textCtx.font = "25px monospace";
   textCtx.textAlign = "center";
   textCtx.textBaseline = "middle";
   textCtx.strokeStyle = 'black';
   textCtx.lineWidth = 4;
-  textCtx.lineJoin="round";
-  textCtx.miterLimit=2;
+  textCtx.lineJoin = "round";
+  textCtx.miterLimit = 2;
   textCtx.strokeText(text, width / 2, height / 2);
 
   textCtx.fillStyle = "white";
@@ -59,71 +59,71 @@ function makeTextCanvas(text:string, width:number, height:number) {
   return textCtx.canvas;
 }
 
-export default class RenderStore{
+export default class RenderStore {
   camera: Camera = null
   light: Light = null
   canvas: HTMLCanvasElement = null
   regl: any = null
   rootStore
 
-  constructor(rootStore: RootStore | ClientStore ){
+  constructor(rootStore: RootStore | ClientStore) {
     this.rootStore = rootStore;
     makeObservable(this, {
-      staticAORenderPayload: computed({keepAlive: true}),
-      flatRenderPayload: computed({keepAlive: true}),
-      userNames: computed({keepAlive: true}),
+      staticAORenderPayload: computed({ keepAlive: true }),
+      flatRenderPayload: computed({ keepAlive: true }),
+      userNames: computed({ keepAlive: true }),
     });
   }
 
-  resize(width: number, height: number){
+  resize(width: number, height: number) {
     this.camera.setViewPortDimensions(width, height)
     this.canvas.width = width;
     this.canvas.height = height;
     this.regl.poll();
   }
 
-  get staticAORenderPayload(){
+  get staticAORenderPayload() {
     return Object.values(this.rootStore.entityStore.entityIndex)
-                 .filter((e) => e.assetFiles && e.renderPayload)
-                 .map((e)=> ({
-                   ...(e.renderPayload),
-                   id: e.id,
-                   model: e.model
-                 }));
+      .filter((e) => e.assetFiles && e.renderPayload)
+      .map((e) => ({
+        ...(e.renderPayload),
+        id: e.id,
+        model: e.model
+      }));
   }
 
-  get replicaRenderNodes(){
+  get replicaRenderNodes() {
     return Object.values(this.rootStore.entityStore.entityIndex)
-                 .filter((e) => e.replicaRenderNode)
-                 .map((e)=> (e.replicaRenderNode));
+      .filter((e) => e.replicaRenderNode)
+      .map((e) => (e.replicaRenderNode));
   }
 
-  get flatRenderPayload(){
+  get flatRenderPayload() {
     return Object.values(this.rootStore.entityStore.entityIndex)
-                 .filter((e) => !e.assetFiles && e.cells.length && !e.collider)
+      .filter((e) => !e.assetFiles && e.cells.length && !e.collider)
   }
 
-  get userNames(): any{
+  get userNames(): any {
     return Object.values(this.rootStore.entityStore.entityIndex)
-                 .filter((e) => e.userName && e.id !== this.rootStore.uuid)
-                 .map((e) => ({
-                   model: mat4.translate(mat4.create(), e.model, [0, 50, 0]),
-                   tex: this.regl.texture({
-                     data: makeTextCanvas(e.userName, 200, 50),
-                     width: 100,
-                     height: 25,
-                     min: 'linear',
-                     premultiplyAlpha: true
-                   })
-                 }))
+      .filter((e) => e.userName && e.id !== this.rootStore.uuid)
+      .map((e) => ({
+        model: mat4.translate(mat4.create(), e.model, [0, 50, 0]),
+        tex: this.regl.texture({
+          data: makeTextCanvas(e.userName, 200, 50),
+          width: 100,
+          height: 25,
+          min: 'linear',
+          premultiplyAlpha: true
+        })
+      }))
   }
 
   init(
     canvas: HTMLCanvasElement,
     width: number,
     height: number
-  ){
-    if(!canvas){
+  ) {
+    if (!canvas) {
       throw new Error(' no canvas passed to renderStore init');
     }
     this.canvas = canvas;
@@ -135,6 +135,7 @@ export default class RenderStore{
       preserveDrawingBuffer: false
     });
 
+    // draw 2d HUD UI with Pixi overlayd the 3D
     /* this.UI = new PIXI.Application({
      *   width,
      *   height,
@@ -175,21 +176,21 @@ export default class RenderStore{
     })
 
     this.regl.drawTris = this.regl({
-      vert:flatVert,
-      frag:flatFrag,
+      vert: flatVert,
+      frag: flatFrag,
       elements: this.regl.prop('cells'),
       depth: true,
       cull: false,
-      attributes:{
+      attributes: {
         position: this.regl.prop('positions'),
       },
       uniforms: {
-        color: [0,0,0,1],
+        color: [0, 0, 0, 1],
         model: mat4.identity([
-          0,0,0,0,
-          0,0,0,0,
-          0,0,0,0,
-          0,0,0,0
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
         ]),
       },
       blend: {
@@ -220,7 +221,7 @@ export default class RenderStore{
     });
 
     this.regl.withShadowMap = this.regl({
-      uniforms:{
+      uniforms: {
         shadowMap: this.regl.shadowBuffer,
       }
     });
@@ -244,7 +245,7 @@ export default class RenderStore{
     ShadowGround();
     ShadowFlat(
       Object.values(this.rootStore.entityStore.entityIndex)
-            .filter((e: IAssetDependant & {collider?: boolean}) => !e.assetFiles && !e.collider)
+        .filter((e: IAssetDependant & { collider?: boolean }) => !e.assetFiles && !e.collider)
     )
     ShadowStaticAOMesh(this.staticAORenderPayload);
   }
@@ -255,7 +256,7 @@ export default class RenderStore{
     ShadedFlat(this.flatRenderPayload);
     AOVoxMesh(this.staticAORenderPayload);
 
-    if(this.rootStore.debug.network){
+    if (this.rootStore.debug.network) {
       ghostBlend({}, () => {
         AOVoxMesh(this.replicaRenderNodes)
       });
@@ -264,7 +265,7 @@ export default class RenderStore{
     Ground();
   }
 
-  cameraContext(){
+  cameraContext() {
     //Render the shadow map to a frame buffer
     this.regl.toFrameBuffer({
       framebuffer: this.regl.shadowBuffer
@@ -278,10 +279,10 @@ export default class RenderStore{
     //
     //
     // Debugging stuff below
-    if(!this.rootStore.debug.render) return;
+    if (!this.rootStore.debug.render) return;
 
     //World origin axis
-    AxisHelper({scale: 100, origin: [0,0,0], rotation: [0,0,0,1]});
+    AxisHelper({ scale: 100, origin: [0, 0, 0], rotation: [0, 0, 0, 1] });
 
     // Draw entity axis helpers
 
@@ -290,36 +291,36 @@ export default class RenderStore{
     let entActors: any[] = [];
     let colliders: any[] = [];
     Object.values(this.rootStore.entityStore.entityIndex)
-          .forEach((entity) => {
-            entAxis.push({
-              scale: 100,
-              rotation: mat4.getRotation(vec4.create(), entity.model),
-              origin: mat4.getTranslation(vec3.create(), entity.model)
-            });
+      .forEach((entity) => {
+        entAxis.push({
+          scale: 100,
+          rotation: mat4.getRotation(vec4.create(), entity.model),
+          origin: mat4.getTranslation(vec3.create(), entity.model)
+        });
 
-            if(entity.hull){
-              entHulls.push({
-                ...entity.hull,
-                color: [0,0.7, 0.4, 1],
-                model: entity.model,
-              });
-            }
-
-            if(entity.worldAABB){
-              entActors.push(entity.aabbRenderPayload)
-            }
-
-            if(entity.collider){
-              colliders.push(entity);
-            }
+        if (entity.hull) {
+          entHulls.push({
+            ...entity.hull,
+            color: [0, 0.7, 0.4, 1],
+            model: entity.model,
           });
+        }
+
+        if (entity.worldAABB) {
+          entActors.push(entity.aabbRenderPayload)
+        }
+
+        if (entity.collider) {
+          colliders.push(entity);
+        }
+      });
 
     AxisHelper(entAxis);
 
     DrawFlat(colliders);
 
     // draw collision hulls
-    if(this.rootStore.debug.drawHulls){
+    if (this.rootStore.debug.drawHulls) {
       DrawFlat(entHulls);
     }
 
@@ -339,45 +340,45 @@ export default class RenderStore{
         localPlayer.rotation,
         localPlayer.centerPoint
       ),
-      color: [0,1,1,0.8]
+      color: [0, 1, 1, 0.8]
     });
 
-    if(this.rootStore.debug.collisions){
+    if (this.rootStore.debug.collisions) {
       const colPoints = [
         {
           positions: localPlayer.colPacket.r3IntersectionPoint,
           count: 1,
-          color: [1,0.5,0.25,1], // orange thing
+          color: [1, 0.5, 0.25, 1], // orange thing
         },
         {
           positions: [localPlayer.colPacket.r3NearestNonIntersectPosition],
           count: 1,
-          color: [0,0,1,1] // blue
+          color: [0, 0, 1, 1] // blue
         },
       ];
 
       const colTri = [...localPlayer.colPacket.collisionTri];
-      if(colTri.length){
+      if (colTri.length) {
         colPoints.push({
           positions: colTri,
           count: colTri.length,
-          color: [0,1,0,1], // green
+          color: [0, 1, 0, 1], // green
         });
       }
 
       Point(colPoints);
 
-      if(localPlayer.colPacket.foundCollision){
+      if (localPlayer.colPacket.foundCollision) {
         this.regl.drawTris({
           positions: localPlayer.colPacket.collisionTri,
-          cells:[[0,1,2]],
-          color: [1,1,1,1],
+          cells: [[0, 1, 2]],
+          color: [1, 1, 1, 1],
           model: mat4.create(),
         });
 
         const r3Origin = vec3.transformMat3(vec3.create(), localPlayer.colPacket.SlidingPlane.origin, localPlayer.colPacket.iCBM);
         this.regl.drawLine({
-          positions:[
+          positions: [
             r3Origin,
             vec3.add(
               vec3.create(),
@@ -385,51 +386,53 @@ export default class RenderStore{
               vec3.scale(vec3.create(), localPlayer.colPacket.SlidingPlane.normal, 100)
             )
           ],
-          color: [1,1,1,1]
+          color: [1, 1, 1, 1]
         });
 
         //      if(localPlayer.colPacket.edge) debugger;
       }
 
-      /*
-       * if(
-       *   localPlayer &&
-       *   localPlayer.traceInfo.intersectTri.length
-       * ){
-       *   const tri = localPlayer.traceInfo.intersectTri;
-       *   this.regl.drawTris({
-       *     positions: tri,
-       *     cells:[[0,1,2]],
-       *     color: [1,0,0,1],
-       *     model: mat4.create(),
-       *   });
 
-       *   Point([
-       *     {
-       *       positions:tri,
-       *       count: 3,
-       *       color: [0,0,1,1]
-       *     }
-       *   ]);
+      if (
+        this.rootStore.debug.collisions &&
+        localPlayer && localPlayer.traceInfo &&
+        localPlayer.traceInfo.intersectTri &&
+        localPlayer.traceInfo.intersectTri.length
+      ) {
+        const tri = localPlayer.traceInfo.intersectTri;
+        this.regl.drawTris({
+          positions: tri,
+          cells: [[0, 1, 2]],
+          color: [1, 0, 0, 1],
+          model: mat4.create(),
+        });
 
-       *   const triNorms = tri.map((triVert) => {
-       *     return {
-       *       positions: [
-       *         triVert,
-       *         vec3.add([], triVert,
-       *                  vec3.scale([], localPlayer.traceInfo.intersectTriNorm, 100)
-       *         )
-       *       ],
-       *       color: [0,0,0,1]
-       *     };
-       *   });
-       *   this.regl.drawLine(triNorms)
-       * }
-       */
+        Point([
+          {
+            positions: tri,
+            count: 3,
+            color: [0, 0, 1, 1]
+          }
+        ]);
+
+        const triNorms = tri.map((triVert: vec3) => {
+          return {
+            positions: [
+              triVert,
+              vec3.add(vec3.create(), triVert,
+                vec3.scale(vec3.create(), localPlayer.traceInfo.intersectTriNorm, 100)
+              )
+            ],
+            color: [0, 0, 0, 1]
+          };
+        });
+        this.regl.drawLine(triNorms)
+      }
+
 
     }
 
-    if( this.rootStore.debug && this.rootStore.debug.debugCamera) {
+    if (this.rootStore.debug && this.rootStore.debug.debugCamera) {
       const debugCamera: {
         target: vec3
         eye: vec3
@@ -464,23 +467,23 @@ export default class RenderStore{
 
       const debugLightProjectionOut = mat4.create();
       const frustrumCells = [
-        [1,0,3],
-        [1,2,3],
+        [1, 0, 3],
+        [1, 2, 3],
 
-        [4,5,7],
-        [5,6,7],
+        [4, 5, 7],
+        [5, 6, 7],
 
-        [1,0,5],
-        [4,0,5],
+        [1, 0, 5],
+        [4, 0, 5],
 
-        [3,0,7],
-        [4,0,7],
+        [3, 0, 7],
+        [4, 0, 7],
 
-        [6,2,7],
-        [3,2,7],
+        [6, 2, 7],
+        [3, 2, 7],
 
-        [6,2,5],
-        [1,2,5],
+        [6, 2, 5],
+        [1, 2, 5],
       ];
 
       // // Draw the debug camera to a frame buffer
@@ -508,7 +511,7 @@ export default class RenderStore{
             // NOTE
             //
             // If the light projection near/far is shorter than the lightDir distance
-            // It will draw the projection artifact in its place. This is useful for debugging
+
             -100, // near
             100, // far
           ),
@@ -517,7 +520,7 @@ export default class RenderStore{
           // Render the shadow map to a frame buffer
           this.regl.toFrameBuffer({
             framebuffer: this.regl.shadowBuffer
-          },() => {
+          }, () => {
             this.regl.clear({
               color: [0, 0, 0, 1],
               depth: 1
@@ -528,7 +531,7 @@ export default class RenderStore{
 
           this.regl.withShadowMap(() => {
             this.regl.clear({
-              color: [1,1,1,1],
+              color: [1, 1, 1, 1],
               depth: 1
             });
 
@@ -551,7 +554,7 @@ export default class RenderStore{
 
   }
 
-  render(){
+  render() {
     this.regl.clear(skyClear);
 
     DrawCamera({

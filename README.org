@@ -3,10 +3,10 @@
 [[./images/play.gif]]
 
 
-This repository contains code for a proof of concept, multiplayer voxel browser game engine. The following README is a look at the technical design and architecture of the engine. For more information on the history and motivation of this project checkout the blog post
+This repository contains code for a proof of concept, multiplayer voxel browser game engine. The following README is a look at the technical design and architecture of the engine. For more information on the history and motivation of this project checkout the companion blog post.
 
 ** Computation Architecture
-This engine is multi threaded using webworkers. The main thread handles the browser APIS: input, networking, rendering. There is one [[./src/browser.worker.ts][simulation worker thread]] that runs the game simulation loop. The simulation worker thread then renders using the [[https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas][offscreen canvas API]]. Messages are passed to the worker thread over the browser [[https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage][postmessage api]]. The server runs the same worker simulation thread but messages are passed over the network instead. This keeps the simulation running at max tick rate and keeps the main render thread at smooth 60 FPS.
+This engine is multi threaded using webworkers. [[./src/play.ts][The main thread]] handles the browser APIS: input, networking, rendering. There is one [[./src/browser.worker.ts][simulation worker thread]] that runs the game simulation loop. The simulation worker thread then renders using the [[https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas][offscreen canvas API]]. Messages are passed to the worker thread over the browser [[https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage][postmessage api]]. The server runs the same worker simulation thread but messages are passed over the network instead. This keeps the simulation running at max tick rate and keeps the main render thread at smooth 60 FPS.
 
 ** Asset Pipeline
 The whole asset pipeline is built around the [[https://github.com/mikolalysenko/ao-mesher][aomesher]] and the complementary ao-shader. Voxels are stored in 3-Dimensional 32bit integer array [[https://github.com/scijs/ndarray][ndarrays]] The ndarrays are created in in x,y,z dimensions that match the source voxel files. The voxel color palette data is then stored within the ndarray as a 32bit integer.
@@ -18,7 +18,7 @@ The vertices are stored in 32bit arrays, Each value is a byte:
  x, y, z, ambient occlusion, normal_x, normal_y, normal_z, tex_id
 #+end_quote
 
-There is an [./scripts/QBToAOVerts.js#L57-L74][interesting byte optimization] where we pack both joint_id + palette_id into the last `text_id` byte.
+There is an [[./scripts/QBToAOVerts.js#L57-L74][interesting byte optimization]] where we pack both joint_id + palette_id into the last `text_id` byte.
 
 The ~.aomesh~ models can be generated with the ~npm run build:meshes~ command.
 
@@ -31,7 +31,7 @@ The animation system uses [[https://github.com/chinedufn/skeletal-animation-syst
 The animations are linked to ~.qb~ files at build time in the [[./scripts/QBToAOVerts.js#L65][QBToAOVerts.js]] script. The Blender to JSON animation pipeline is depressingly brittle. There is a list of Landon and Blender dependencies [[./scripts/landon_export_actions.sh][documented in the landon export script]].
 
 ** Rendering
-The engine has a stateless rendering function influenced by react. An offscreen canvas reference is passed from the main thread to the simulation worker. The game state from the ECS is passed to a render function. The rendering function uses ~react-regl~ to which is wrapper for [[https://github.com/regl-project/regl/][Regl]].
+The engine has a stateless rendering function influenced by react. An [[./src/play.ts#L18][offscreen canvas reference]] is passed from the main thread to the simulation worker. The game state from the ECS is passed to a render function. The rendering function uses ~react-regl~ to which is wrapper for [[https://github.com/regl-project/regl/][Regl]].
 
 ** Game State & Entity Component System (ECS)
 The ECS is not a pure ECS with strict flat buffer memory arrangement. The engine uses a custom entity component system powered by [[https://mobx.js.org/README.html][mobx]]. It's more of a mixin system. Entities are classes composed of mixins. Each mixin is a class that has its own related state. Mixins then use mobx's ~computed~ and and ~observable~ helpers to dynamically derive entity state.
