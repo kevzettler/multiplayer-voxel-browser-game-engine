@@ -53,9 +53,6 @@ function qbToNDArray(qbMatrix) {
       paletteMap[colorKey] = Object.keys(paletteMap).length;
     }
 
-    if (jointId > 25) throw `Overflow error on ${qbMatrix.name} jontId > 25`;
-    if (paletteMap[colorKey] > 9) throw `Overflow error on ${qbMatrix.name} palette > 9 `;
-    if (jointId === 25 && paletteMap[colorKey] > 5) throw `Overflow error on ${qbMatrix.name} jointId == 25 palete `;
 
     //This is a trick
     // The joint and palette indexs are packed in to a single byte 255 max
@@ -66,11 +63,16 @@ function qbToNDArray(qbMatrix) {
     // joint=12 + palette=3 = combo = 123
     // they are seperated at runtime by digits place
     // 134 = joint=14, palette=4
+    if (jointId > 25) throw `Overflow error on ${qbMatrix.name} jontId > 25`;
+    if (paletteMap[colorKey] > 9) throw `Overflow error on ${qbMatrix.name} palette > 9 `;
+    if (jointId === 25 && paletteMap[colorKey] > 5) throw `Overflow error on ${qbMatrix.name} jointId == 25 palete `;
+
     const jointAndPaletteDecmialCombo = Number(String(jointId) + String(paletteMap[colorKey]));
 
     if (jointAndPaletteDecmialCombo > 255) throw "Overflow on joint and palette index";
 
     console.log(`${qbMatrix.name}: voxel: ${index} joinId ${jointId} + palette ${paletteMap[colorKey]} = `, jointAndPaletteDecmialCombo);
+
     n.set(
       voxel.x,
       voxel.y,
