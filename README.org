@@ -1,5 +1,15 @@
 * Multiplayer voxel browser game engine
-![alt text](./gameplay.gif "Logo Title Text 1")
+[[./gameplay.gif]]
+
+    #+BEGIN_HTML
+<a href='/img/multiplayer-engine-post/play.gif'>
+  <img src='/img/multiplayer-engine-post/play.gif'
+       alt="Animated give of a 3d multiplayer browser engine"
+       title="Demonstartion of multiplayer game engine multilpe players" />
+</a>
+#+END_HTML
+
+
 This repository contains code for a prototype multiplayer voxel browser game engine. The following README is a look at the technical design and architecture of the engine. For more information on the history and motivation of this project checkout the blog post
 
 ** Computation Architecture
