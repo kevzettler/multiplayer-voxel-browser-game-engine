@@ -58,10 +58,14 @@ function qbToNDArray(qbMatrix) {
     if (jointId === 25 && paletteMap[colorKey] > 5) throw `Overflow error on ${qbMatrix.name} jointId == 25 palete `;
 
     //This is a hack
-    //The joint and palette indexs are packed in to a byte 255 max
-    //because joint can be > 15 we can't use two, 4bit numbers
+    // The joint and palette indexs are packed in to a single byte 255 max
+    // because joint can be > 15 we can't use two, 4bit numbers
+    // joint is always <= 25 and palette is always <= 5
+    // so we glue them together into an 8bit number
     // joint=25 + palette=5 = combo=255
-    // they are seperated by decimal digits
+    // joint=12 + palette=3 = combo = 123
+    // they are seperated at runtime by digits place
+    // 134 = joint=14, palette=4
     const jointAndPaletteDecmialCombo = Number(String(jointId) + String(paletteMap[colorKey]));
 
     if (jointAndPaletteDecmialCombo > 255) throw "Overflow on joint and palette index";
