@@ -57,7 +57,7 @@ function qbToNDArray(qbMatrix) {
     if (paletteMap[colorKey] > 9) throw `Overflow error on ${qbMatrix.name} palette > 9 `;
     if (jointId === 25 && paletteMap[colorKey] > 5) throw `Overflow error on ${qbMatrix.name} jointId == 25 palete `;
 
-    //This is a hack
+    //This is a trick
     // The joint and palette indexs are packed in to a single byte 255 max
     // because joint can be > 15 we can't use two, 4bit numbers
     // joint is always <= 25 and palette is always <= 5
