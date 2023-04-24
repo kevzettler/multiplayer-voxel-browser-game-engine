@@ -3,86 +3,88 @@
 [[./images/play.gif]]
 
 
-This repository contains code for a proof of concept, multiplayer voxel browser game engine. Use at your own risk. The following README is a look at the technical design and architecture of the engine. For more information on the history and motivation of this project [[https://kevzettler.com/2023/04/20/multiplayer-voxel-game-engine/][checkout the companion blog post]].
+This repository contains code for a proof-of-concept, multiplayer voxel browser game engine. Use at your own risk. The following README is a look at the technical design and architecture of the engine. For more information on the history and motivation of this project [[https://kevzettler.com/2023/04/20/multiplayer-voxel-game-engine/][checkout the companion blog post]].
 
 ** Computation Architecture
-This engine is multi threaded using web workers. [[./src/play.ts][The main thread]] handles the browser APIS: input, networking, rendering. There is one [[./src/browser.worker.ts][simulation worker thread]] that runs the game simulation loop. The simulation worker thread then renders using the [[https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas][offscreen canvas API]]. Messages are passed to the worker thread over the browser [[https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage][postmessage api]]. The server runs the same worker simulation thread but messages are passed over the network instead. This keeps the simulation running at max tick rate and keeps the main render thread at smooth 60 FPS.
+This engine is multi-threaded using web workers. [[./src/play.ts][The main thread]] handles the browser APIS: input, networking, and rendering. There is one [[./src/browser.worker.ts][simulation worker thread]] that runs the game simulation loop. The simulation worker thread then renders using the [[https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas][offscreen canvas API]]. Messages are passed to the worker thread over the browser [[https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage][postmessage api]]. The server runs the same worker simulation thread, but messages are passed over the network instead. This separation of concerns keeps the simulation running at max tick rate and supports the main render thread at smooth 60 FPS.
 
 ** Asset Pipeline
-The whole asset pipeline is built around the [[https://github.com/mikolalysenko/ao-mesher][aomesher]] and the complementary ao-shader. Voxels are stored in 3-Dimensional 32bit integer array [[https://github.com/scijs/ndarray][ndarrays]] The ndarrays are created in in x,y,z dimensions that match the source voxel files. The voxel color palette data is then stored within the ndarray as a 32bit integer.
+The asset pipeline was built around the [[https://github.com/mikolalysenko/ao-mesher][aomesher]] and the complementary ao-shader. Voxels are stored in a 3-Dimensional 32bit integer array [[https://github.com/scijs/ndarray][ndarrays]] The ndarrays are created in x,y, and z dimensions that match the source voxel file dimensions. The voxel color palette data is stored within the ndarray as a 32-bit integer.
 
-The asset pipeline parses ~.vox~ and ~.qb~ format voxel models and converts to a custom ~.aomesh~ format. ~.vox~ models are used for static environment models. ~.qb~ models are used for segmented character models that are later bound to skeletal animation data. The ~.qb~ files store a combination of joint + color values. The ~.aomesh~ format is an interleaved binary vertex format that captures follows the [[https://github.com/mikolalysenko/ao-mesher/blob/master/mesh.js#L21][aomesher vertex format]]
+The asset pipeline parses ~.vox~ and ~.qb~ format voxel models and converts to a custom ~.aomesh~ format. ~.vox~ models are used for static environment models. ~.qb~ models are used for segmented character models later bound to skeletal animation data. The ~.qb~ files store a combination of joint + color values. The ~.aomesh~ format is an interleaved binary vertex format that captures follows the [[https://github.com/mikolalysenko/ao-mesher/blob/master/mesh.js#L21][aomesher vertex format]]
 
-The vertices are stored in 32bit arrays, Each value is a byte:
+The vertices are stored in 32bit arrays; Each vertex is a 32bit integer made up of the following 8bit values:
 #+begin_quote
  x, y, z, ambient occlusion, normal_x, normal_y, normal_z, tex_id
 #+end_quote
 
 There is an [[./scripts/QBToAOVerts.js#L57-L74][interesting byte optimization]] where we pack both ~joint_id~ + ~palette_id~ into the last ~text_id~ byte.
 
-The ~.aomesh~ models can be generated with the ~npm run build:meshes~ command.
+You can generate the ~.aomesh~ models with the ~npm run build:meshes~ command.
 
 ** Player avatars
 
 [[./images/equip.gif]]
 
-Player avatars are customization through segmented player meshes. The player meshes are stored in to [[https://www.getqubicle.com/][quiblce .qb]] files and broken into separate meshes. They are then converted to vertices format at runtime and bound to skeleton join index ids.
+Player avatars are customization through segmented player meshes. The player meshes are stored in [[https://www.getqubicle.com/][quiblce .qb]] files and broken into separate meshes. They are then converted to vertices format at runtime and bound to skeleton joint index ids.
 
 *** Animation
-The animation system uses [[https://github.com/chinedufn/skeletal-animation-system][Skeletal animation system]] The skeletal animations are baked in a Blender file then the animations are exported to JSON using [[https://docs.rs/landon/latest/landon/][landon]].
-The animations are linked to ~.qb~ files at build time in the [[./scripts/QBToAOVerts.js#L65][QBToAOVerts.js]] script. The Blender to JSON animation pipeline is depressingly brittle. There is a list of Landon and Blender dependencies [[./scripts/landon_export_actions.sh][documented in the landon export script]].
+The animation system uses [[https://github.com/chinedufn/skeletal-animation-system][Skeletal animation system]]. The skeletal animations live in a Blender file then the animations are exported to JSON using [[https://docs.rs/landon/latest/landon/][Landon]].
+The animations are linked to ~.qb~ files at build time in the [[./scripts/QBToAOVerts.js#L65][QBToAOVerts.js]] script. The Blender to JSON animation pipeline is depressingly brittle. There is a list of Landon and Blender dependencies [[./scripts/landon_export_actions.sh][documented in the Landon export script]].
 
 ** Game State & Entity Component System (ECS)
-The ECS is not a pure ECS with strict flat buffer memory arrangement. The engine uses a custom entity component system powered by [[https://mobx.js.org/README.html][mobx]]. It's more of a mixin system. Entities are classes composed of mixins. Each mixin is a class that has its own related state. Mixins then use mobx's ~computed~ and and ~observable~ helpers to dynamically derive entity state.
+The ECS does not follow a pure ECS pattern with a strict flat buffer memory arrangement. The engine uses a custom entity component system powered by [[https://mobx.js.org/README.html][mobx]]. It's more of a mixin system. Entities are classes composed of mixins. Each mixin is a class that has its related state. Mixins then use mobx's ~computed~ and ~observable~ helpers to derive entity state dynamically.
 
 ** Rendering
 
 [[./images/render.gif]]
 
-The engine has a stateless rendering function influenced by react. An [[./src/play.ts#L18][offscreen canvas reference]] is passed from the main thread to the simulation worker. The game state from the ECS is passed to a render function. The rendering function uses ~react-regl~ to which is wrapper for [[https://github.com/regl-project/regl/][Regl]]. Most the rendering action happens within the [[./src/RenderStore.ts][RenderStore.ts]]. The RenderStore imports shader code and draw commands then serializes the game state from the workers and passes it to the GPU. The render function is called on [[https://github.com/kevzettler/multiplayer-voxel-browser-game-engine/blob/master/src/ClientStore.ts#L29][each tick of the game loop]].
+The engine has a stateless rendering function influenced by React. An [[./src/play.ts#L18][offscreen canvas reference]] is passed from the main thread to the simulation worker. The game state from the ECS is passed to a render function. The rendering function uses ~react-regl~, which is a wrapper for [[https://github.com/regl-project/regl/][Regl]]. Most of the rendering action happens within the [[./src/RenderStore.ts][RenderStore.ts]]. The RenderStore imports shader code, draws commands, and then serializes the game state from the workers and passes it to the GPU. The render function is called on [[https://github.com/kevzettler/multiplayer-voxel-browser-game-engine/blob/master/src/ClientStore.ts#L29][each tick of the game loop]].
 
 ** Physics and Collision
 
 [[./images/physics.gif]]
 
 + Broad phase
-The broad phase collision uses AABB to AABB. Each frame checks all entities for AABB collisions. This could be improved with some spatial partitioning quad tree system or something.
+The broad phase collision uses AABB to AABB. Each frame checks all entities for AABB collisions. You could further optimize the broad phase with some spatial partitioning quadtree system or something.
 
 + Narrow phase
-Narrow phase collision uses swept sphere triangle collision based on the awesome paper [[http://www.peroxide.dk/papers/collision/collision.pdf][Improved Collision detection and Response" by Kasper Fauerby]]. When a broad phase collision is detected the narrow phase detection starts. Narrow phase currently only happens on player collision capsules against environment entities.
+Narrow phase collision uses swept sphere triangle collision based on the fantastic paper [[http://www.peroxide.dk/papers/collision/collision.pdf][Improved Collision Detection and Response" by Kasper Fauerby]]. When a broad phase collision is detected, the narrow phase detection starts. The narrow phase currently only happens on player collision capsules against environment entities.
 
 ** Networking
 
-This gif shows the players client position and server position as a 'ghost'
+This gif shows the players' client position and server position as a 'ghost.'
 [[./images/ghost.gif]]
 
-The networking code uses WebRTC. The WebRTC connection is set to run in [[./src/network/config.ts#L41-44][unreliable mode]] which supposedly removes some overhead reliability checks and is equivilent to running in UDP instead of TCP. The server uses a node.js WebRTC implementation and acts as a headless peer. A [[https://github.com/mafintosh/signalhub][Signalhub]] server is used to broker the WebRTC handshake. In production a Coturn server is used to establish STUN/TURN Nat punch through.
+The networking code uses WebRTC. The WebRTC connection runs in [[./src/network/config.ts#L41-44][unreliable mode]], which supposedly removes some overhead reliability checks and is equivalent to running in UDP instead of TCP. The server uses a node.js WebRTC implementation and acts as a headless peer. A [[https://github.com/mafintosh/signalhub][Signalhub]] server acts as a broker for the WebRTC handshake. In production, a Coturn server establishes STUN/TURN Nat punch through.
 
 Entities can use the [[./src/NetworkReplicated.ts][NetworkReplicated]] to replicate their network state. The [[./src/NetworkRollback.ts][NetworkRollback]] component is a naive rollback reconciliation algorithm implementation that players use to buffer and reconcile inputs when synchronized from the server.
 
 ** Usage and development workflow
 
 *** Installation
-This was built against ~node v12.21.0~ and hasn't been tested with later versions. Try upgrading at your own risk
+This code base was built against ~node v12.21.0~ and hasn't been tested with later versions. Try upgrading at your own risk.
 
-clone this repo and ~npm install~
+Clone this repo and ~npm install~
 
 *** Running locally
-The engine can be started with:
+You can start the engine by executing the following:
 
 #+begin_src
 npm run dev
 #+end_src
 
-This is a combined command that will startup several concurrent processes. It will take ~15 seconds to startup due to some unfortunate sequential sleep commands. The app will be accessible on https://localhost:3000 when ready.
+The dev command is a combined command that will startup several concurrent processes. It will take ~15 seconds to startup due to some unfortunate sequential sleep commands. The app will be accessible on https://localhost:3000 when ready.
 
 
 *** Debugging
-There is a set of debugging flags in the browser worker thread that can be toggled to provide helpful debug rendering features:
+There is a set of debugging flags in the browser worker thread. You can toggle the debug flags to provide debug rendering features:
 https://github.com/kevzettler/multiplayer-voxel-browser-game-engine/blob/master/src/browser.worker.ts#L18-L28
 
 *** Deployment
-There are deployment files in the /devops directory. They will need some modification to get working I stripped out all the secrets and domain specific information. There is a [[./devops/docker-compose.yml][docker-compose]] file that demonstrates the service dependencies needed to run a production copy of this engine. I was able to run the complete engine on the lowest tier digital ocean instance with at least 8 players connected to an instance.
+There are deployment files in the /devops directory. They will need some modification to get working. I stripped out all the secrets and domain-specific information. There is a [[./devops/docker-compose.yml][docker-compose]] file that demonstrates the service dependencies needed to run a production copy of this engine. I ran the complete engine on the lowest-tier digital ocean instance with at least eight players connected to a server instance.
 
 ** License
-CC BY-NC-SA
+This project is released under CC BY-NC-SA
+https://creativecommons.org/licenses/by-nc-sa/3.0/
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License</a>.
