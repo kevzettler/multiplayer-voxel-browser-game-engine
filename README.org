@@ -58,7 +58,10 @@ This gif shows the players' client position and server position as a 'ghost.'
 
 The networking code uses WebRTC. The WebRTC connection runs in [[./src/network/config.ts#L41-44][unreliable mode]], which supposedly removes some overhead reliability checks and is equivalent to running in UDP instead of TCP. The server uses a node.js WebRTC implementation and acts as a headless peer. A [[https://github.com/mafintosh/signalhub][Signalhub]] server acts as a broker for the WebRTC handshake. In production, a Coturn server establishes STUN/TURN Nat punch through.
 
-Entities can use the [[./src/NetworkReplicated.ts][NetworkReplicated]] to replicate their network state. The [[./src/NetworkRollback.ts][NetworkRollback]] component is a naive rollback reconciliation algorithm implementation that players use to buffer and reconcile inputs when synchronized from the server.
+Entities can use the [[./src/NetworkReplicated.ts][NetworkReplicated]] to replicate their network state. The [[./src/NetworkRollback.ts][NetworkRollback]] component is a naive rollback reconciliation algorithm implementation that players use to buffer and reconcile inputs when synchronized from the server. Server message payloads are serialized using [[https://github.com/evanw/kiwi][kiwi-schema]]
+
+*** Server load testing
+Running the production server on the most affordable Digital Ocean instance, I successfully conducted play tests with 8-10 players connected simultaneously. This server load handling is satisfactory for a death match gameplay design, meeting our expectations. While we didn't test further scaling of the server, it's possible that more powerful instances could accommodate many more players.
 
 ** Usage and development workflow
 
