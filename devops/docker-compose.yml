@@ -1,0 +1,41 @@
+version: "3"
+services:
+  # https://hub.docker.com/r/emilbayes/signalhub
+  signalhub:
+    image: emilbayes/signalhub:latest
+    ports:
+      - "8080:8080"
+  turnserver:
+    image: meetrix/coturn-long-term-cred
+    network_mode: "host"
+    tty: true
+    environment:
+      - TURN_PORT_START=49152
+      - TURN_PORT_END=65535
+      # Update with your domain name
+      - TURN_REALM=hostname
+  game-server:
+    image: your docker image repo here
+    build:
+      context: ..
+      dockerfile: devops/server.Dockerfile
+    command: node ./build/server.js
+    ports:
+      - "4000:4000"
+    links:
+      - signalhub
+      - turnserver
+      - game-client
+  game-client:
+    image: your docker image repo here
+    build:
+      context: ..
+      dockerfile: devops/client.Dockerfile
+      ## Update these hostnames to yoru domain
+      args:
+        - SIGNALHUB_HOST=hostname
+        - SOCKETIO_HOST=hostname
+        - TURNSERVER_HOST=hostname
+        - ASSET_HOST=hostname
+    ports:
+      - "80:80"
