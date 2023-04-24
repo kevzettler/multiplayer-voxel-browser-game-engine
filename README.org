@@ -49,8 +49,8 @@ The broad phase collision uses AABB to AABB. Each frame checks all entities for 
 Narrow phase collision uses swept sphere triangle collision based on the awesome paper [[http://www.peroxide.dk/papers/collision/collision.pdf][Improved Collision detection and Response" by Kasper Fauerby]]. When a broad phase collision is detected the narrow phase detection starts. Narrow phase currently only happens on player collision capsules against environment entities.
 
 ** Networking
-[[
-./images/ghost.gif]]
+
+[[./images/ghost.gif]]
 
 The networking code uses WebRTC. The WebRTC connection is set to run in [[./src/network/config.ts#L41-44][unreliable mode]] which supposedly removes some overhead reliability checks and is equivilent to running in UDP instead of TCP. The server uses a node.js WebRTC implementation and acts as a headless peer. A [[https://github.com/mafintosh/signalhub][Signalhub]] server is used to broker the WebRTC handshake. In production a Coturn server is used to establish STUN/TURN Nat punch through.
 
